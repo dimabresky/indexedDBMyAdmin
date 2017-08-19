@@ -1,0 +1,90 @@
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>IndexedDBMyAdmin</title>
+
+    <link rel="stylesheet" href="./css/bootstrap.min.css">
+    <link rel="stylesheet" href="./css/index.css">
+</head>
+<body>
+
+
+    <h1 id="header-title">Администрирование локальной базы данных</h1>
+
+
+    <div id="main-container">
+
+        <div class="row" id="main-panel-btns">
+
+            <div class="col-lg-6 col-md-6 col-sm-6">
+
+                <select name="stores" id="stores" class="form-control">
+                    <option value="">Выберите хранилище из списка</option>
+                </select>
+
+                <button id="delete-store-btn" type="button" class="btn btn-danger">Удалить</button>
+
+            </div>
+
+            <div class="col-lg-6 col-md-6 col-sm-6">
+
+                <div class="text-right">
+                    <button data-toggle="modal" data-target="#add-store" type="button" class="btn btn-success">+ Добавить хранилище</button>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="row">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>name</th>
+                        <th>description</th>
+                        <th>actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>1</td>
+                        <td>Статья #1</td>
+                        <td>Описание статьи</td>
+                        <td class="action-btns">
+                            <button type="button" class="btn btn-primary">Редактировать</button>
+                            <button type="button" class="btn btn-danger">Удалить</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+
+    <div id="add-store" class="modal fade" role="dialog">
+        <div class="modal-dialog">
+
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title">Добавить хранилище</h4>
+                </div>
+                <div class="modal-body">
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-success" data-dismiss="modal">Добавить</button>
+                    <button type="button" class="btn btn-primary" data-dismiss="modal">Отмена</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script src="./js/plugins/jquery-3.2.1.min.js"></script>
+    <script src="./js/plugins/bootstrap.min.js"></script>
+</body>
+</html>
