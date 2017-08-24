@@ -6,85 +6,127 @@
     <title>IndexedDBMyAdmin</title>
 
     <link rel="stylesheet" href="./css/bootstrap.min.css">
+    <link rel="stylesheet" href="./css/bootstrap-theme.min.css">
     <link rel="stylesheet" href="./css/index.css">
 </head>
 <body>
 
-
-    <h1 id="header-title">Администрирование локальной базы данных</h1>
-
-
-    <div id="main-container">
-
-        <div class="row" id="main-panel-btns">
-
-            <div class="col-lg-6 col-md-6 col-sm-6">
-
-                <select name="stores" id="stores" class="form-control">
-                    <option value="">Выберите хранилище из списка</option>
-                </select>
-
-                <button id="delete-store-btn" type="button" class="btn btn-danger">Удалить</button>
-
-            </div>
-
-            <div class="col-lg-6 col-md-6 col-sm-6">
-
-                <div class="text-right">
-                    <button data-toggle="modal" data-target="#add-store" type="button" class="btn btn-success">+ Добавить хранилище</button>
+    <div id="edit-store" class="modal fade" role="dialog">
+        <div class="modal-dialog">
+            <form name="add_store">
+                <!-- Modal content-->
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                        <h4 class="modal-title">Добавление хранилища</h4>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label for="store_name">Название таблицы(латиницей)</label>
+                            <input class="form-control" id="store-name" type="text">
+                        </div>
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Название поля (кирилицей или латиницей)</th>
+                                    <th>Код поля<span class="required">*</span> (латиницей)</th>
+                                    <th>Тип поля</th>
+                                    <th>Является уникальным</th>
+                                </tr>
+                            </thead>
+                            <tbody id="edit-store-rows-container">
+                                <tr>
+                                    <td><input class="form-control" type="text"></td>
+                                    <td><input class="form-control" type="text"></td>
+                                    <td><select class="select-of-types form-control">
+                                        <option value="String">Строка</option>
+                                        <option value="Text">Текст</option>
+                                        <option value="Boolean">Да/Нет</option>
+                                    </select></td>
+                                    <td><input type="checkbox"></td>
+                                </tr>
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="4" class="text-right">
+                                        <button onclick="Utils.addEditStoreTableRow()" type="button" class="btn btn-success">+ Еще</button>
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" data-dismiss="modal">Отмена</button>
+                        <button onclick="Utils.addStore()" type="button" class="btn btn-success">Добавить</button>
+                    </div>
                 </div>
-
-            </div>
+            </form>
         </div>
-
-        <div class="row">
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>name</th>
-                        <th>description</th>
-                        <th>actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>1</td>
-                        <td>Статья #1</td>
-                        <td>Описание статьи</td>
-                        <td class="action-btns">
-                            <button type="button" class="btn btn-primary">Редактировать</button>
-                            <button type="button" class="btn btn-danger">Удалить</button>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-
     </div>
 
-    <div id="add-store" class="modal fade" role="dialog">
-        <div class="modal-dialog">
+    <div id="wrapper">
 
-            <!-- Modal content-->
-            <div class="modal-content">
-                <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal">&times;</button>
-                    <h4 class="modal-title">Добавить хранилище</h4>
-                </div>
-                <div class="modal-body">
+        <div id="header-title">
+            <h1>Администрирование локальной базы данных</h1>
+        </div>
+
+        <div id="container">
+
+            <div class="row" id="main-panel-btns">
+
+                <div class="col-lg-6 col-md-6 col-sm-6">
+
+                    <select id="select-store-container" class="form-control">
+                        <option value="">Выберите хранилище из списка</option>
+                    </select>
+
+                    <button data-toggle="modal" data-target="#edit-store" type="button" class="hidden btn btn-primary">Редактировать</button>
+                    <button type="button" class="hidden btn btn-danger">Удалить</button>
 
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-success" data-dismiss="modal">Добавить</button>
-                    <button type="button" class="btn btn-primary" data-dismiss="modal">Отмена</button>
+
+                <div class="col-lg-6 col-md-6 col-sm-6">
+
+                    <div class="text-right">
+                        <button data-toggle="modal" data-target="#edit-store" type="button" class="btn btn-success">+ Добавить хранилище</button>
+                    </div>
+
                 </div>
             </div>
 
+            <div class="row">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>name</th>
+                            <th>description</th>
+                            <th>actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1</td>
+                            <td>Статья #1</td>
+                            <td>Описание статьи</td>
+                            <td class="action-btns">
+                                <button type="button" class="btn btn-primary">Редактировать</button>
+                                <button type="button" class="btn btn-danger">Удалить</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
         </div>
+
     </div>
 
     <script src="./js/plugins/jquery-3.2.1.min.js"></script>
     <script src="./js/plugins/bootstrap.min.js"></script>
+    <script src="./js/IDBWrapper.js"></script>
+    <script src="./js/DBConfig.js"></script>
+    <script src="./js/Utilites.js"></script>
+    <script src="./js/index.js"></script>
 </body>
 </html>

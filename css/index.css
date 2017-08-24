@@ -1,6 +1,9 @@
 
-#main-container {
+#wrapper {
     min-width: 1170px;
+}
+
+#container {
     margin: 0 auto;
     padding: 0 70px;
 }
@@ -10,7 +13,7 @@
     height: 100px;
     background-color: #0275d8;
     margin: 0 0 20px 0;
-    padding-top: 20px;
+    padding-top: 15px;
     text-align: center;
 }
 
@@ -18,11 +21,19 @@
     margin-bottom: 50px;
 }
 
-#stores {
+#select-store-container {
     max-width: 300px;
     display: inline;
 }
 
 .action-btns button{
     margin-bottom: 5px;
+}
+
+.select-of-types {
+    width: 100px;
+}
+
+.required {
+    color: red;
 }
