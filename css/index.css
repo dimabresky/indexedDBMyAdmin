@@ -21,7 +21,7 @@
     margin-bottom: 50px;
 }
 
-#select-store-container {
+#select-storage-container {
     max-width: 300px;
     display: inline;
 }
@@ -36,4 +36,8 @@
 
 .required {
     color: red;
+}
+
+.pr-0 {
+    padding-right: 0px !important;
 }

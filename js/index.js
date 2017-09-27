@@ -1,35 +1,29 @@
-/**
-* Создание БД
-* таблицы списка таблиц (stores_table)
-* подключение к БД и инициализация приложения
-*/
-$(document).ready(function () {
+!function ($, State, Utils) {
 
-    'use strict';
+    $(document).ready(function () {
 
-    Utils.db = new IDBWrapper(DBConfig.DBNAME, null, function () {
+        State.cache.define('#row-tpl', function () {
 
-        this.createStore({
-            name: DBConfig.STORES_TABLE_NAME,
-            fields: [
-                {
-                    code: 'name',
-                    uniq: true
-                },
-                {
-                    code: 'fields',
-                    uniq: false
-                }
-            ]
+            if (this.cache['#row-tpl'] !== 'object') {
+                this.cache['#row-tpl'] = $('#row-tpl');
+            }
+
+            return this.cache['#row-tpl'];
+
+        });
+
+        State.db.connect().then(function () {
+
+            var dbStoragesList = State.db.getStoresList(), i, storagesList;
+
+            for (i = 0; i < dbStoragesList.length; i = i + 1) {
+
+                Utils.renderStorageInList(dbStoragesList[i]);
+            }
+
+        }).catch(function (message) {
+            Utils.triggerError(message);
         });
     });
 
-    Utils.db.connect()
-        .then(function () {
-
-        })
-        .catch(function (message) {
-
-            Utils.triggerError(message);
-        });
-});
+}(jQuery, State, Utils);

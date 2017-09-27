@@ -1,11 +1,10 @@
 /**
 * @version: 1.1
 * @author: dimabresky https://bitbucket.org/dimabresky/, https://github.com/dimabresky
-* @copyright: Copyright (c) 2017 dimabresky. All rights reserved.
-* @license: Licensed under the MIT license. See http://www.opensource.org/licenses/mit-license.php
+* @copyright: Copyright (c) 2017 dimabresky. Все права защищены.
+* @license: MIT лицензия http://www.opensource.org/licenses/mit-license.php
 */
 
-// Follow the UMD template https://github.com/umdjs/umd/blob/master/templates/returnExportsGlobal.js
 (function (root, factory) {
 
     'use strict';
@@ -22,6 +21,7 @@
         root.IDBWrapper = factory();
     }
 })(this, function () {
+
     var indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB,
         Promise = window.Promise;
 
@@ -127,9 +127,10 @@
 
             this.onUpgradeNeeded = onUpgradeNeeded;
 
-            if (this.transaction) {
+            if (typeof this.transaction === 'IDBTransaction') {
 
                 this.transaction.abort();
+                this.transaction = null;
             }
 
             this.close();
@@ -138,7 +139,7 @@
         };
 
         /**
-        * Создает хранилище БД
+        * Cоздание хранилища БД
         * @param  {Object} storeData Объект данных для создания хранилища
         *
         * storeData = {
@@ -152,7 +153,7 @@
         *   ]
         * }
         *
-        * @return {this}
+        * @return {undefined}
         */
         this.createStore = function (storeData) {
 
@@ -180,7 +181,32 @@
                 }
             }
 
-            return this;
+        }
+
+        /**
+        * Переподключение к БД и создание хранилища БД
+        * @param  {Object} storeData Объект данных для создания хранилища
+        *
+        * storeData = {
+        *   name: 'Название хранилища',
+        *   fields: [
+        *       {
+        *           code: 'Код поля',
+        *           uniq: true/false
+        *       },
+        *       ...
+        *   ]
+        * }
+        *
+        * @return {Promise}
+        */
+        this.createNewStore = function (storeData) {
+
+            return this.reconnect(function () {
+
+                this.createStore(storeData);
+
+            });
         };
 
         /**

@@ -11,7 +11,7 @@
 </head>
 <body>
 
-    <div id="edit-store" class="modal fade" role="dialog">
+    <div id="add-storage" class="modal fade" role="dialog">
         <div class="modal-dialog">
             <form name="add_store">
                 <!-- Modal content-->
@@ -23,7 +23,7 @@
                     <div class="modal-body">
                         <div class="form-group">
                             <label for="store_name">Название таблицы(латиницей)</label>
-                            <input class="form-control" id="store-name" type="text">
+                            <input class="form-control" id="storage-name" type="text">
                         </div>
                         <table class="table">
                             <thead>
@@ -34,7 +34,7 @@
                                     <th>Является уникальным</th>
                                 </tr>
                             </thead>
-                            <tbody id="edit-store-rows-container">
+                            <tbody id="row-tpl">
                                 <tr>
                                     <td><input class="form-control" type="text"></td>
                                     <td><input class="form-control" type="text"></td>
@@ -49,7 +49,7 @@
                             <tfoot>
                                 <tr>
                                     <td colspan="4" class="text-right">
-                                        <button onclick="Utils.addEditStoreTableRow()" type="button" class="btn btn-success">+ Еще</button>
+                                        <button onclick="Utils.renderStorageModal()" type="button" class="btn btn-success">+ Еще</button>
                                     </td>
                                 </tr>
                             </tfoot>
@@ -57,7 +57,28 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-primary" data-dismiss="modal">Отмена</button>
-                        <button onclick="Utils.addStore()" type="button" class="btn btn-success">Добавить</button>
+                        <button onclick="Utils.addStorage()" id="add-storage-btn" type="button" class="btn btn-success">Добавить</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="add-storage-element" class="modal fade" role="dialog">
+        <div class="modal-dialog">
+            <form name="add_store">
+                <!-- Modal content-->
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                        <h4 class="modal-title">Добавление/редактирование элемента таблицы</h4>
+                    </div>
+                    <div class="modal-body">
+
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" data-dismiss="modal">Отмена</button>
+                        <button onclick="Utils.addElement()" id="add-storage-element-btn" type="button" class="btn btn-success">Добавить</button>
                     </div>
                 </div>
             </form>
@@ -67,7 +88,7 @@
     <div id="wrapper">
 
         <div id="header-title">
-            <h1>Администрирование локальной базы данных</h1>
+            <h1>IndexedDBMyAdmin</h1>
         </div>
 
         <div id="container">
@@ -76,8 +97,8 @@
 
                 <div class="col-lg-6 col-md-6 col-sm-6">
 
-                    <select id="select-store-container" class="form-control">
-                        <option value="">Выберите хранилище из списка</option>
+                    <select id="select-storage-container" onchange="Utils.choiceOfStorage(this);" class="form-control">
+                        <option value="">Выберите таблицу из списка</option>
                     </select>
 
                     <button data-toggle="modal" data-target="#edit-store" type="button" class="hidden btn btn-primary">Редактировать</button>
@@ -88,34 +109,14 @@
                 <div class="col-lg-6 col-md-6 col-sm-6">
 
                     <div class="text-right">
-                        <button data-toggle="modal" data-target="#edit-store" type="button" class="btn btn-success">+ Добавить хранилище</button>
+                        <button data-toggle="modal" data-target="#add-storage" type="button" class="btn btn-success">+ Добавить хранилище</button>
                     </div>
 
                 </div>
             </div>
 
             <div class="row">
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>name</th>
-                            <th>description</th>
-                            <th>actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>1</td>
-                            <td>Статья #1</td>
-                            <td>Описание статьи</td>
-                            <td class="action-btns">
-                                <button type="button" class="btn btn-primary">Редактировать</button>
-                                <button type="button" class="btn btn-danger">Удалить</button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+                <div class="col-md-12 col-sm-12 col-xs-12" id="data-area"></div>
             </div>
 
         </div>
@@ -125,7 +126,7 @@
     <script src="./js/plugins/jquery-3.2.1.min.js"></script>
     <script src="./js/plugins/bootstrap.min.js"></script>
     <script src="./js/IDBWrapper.js"></script>
-    <script src="./js/DBConfig.js"></script>
+    <script src="./js/State.js"></script>
     <script src="./js/Utilites.js"></script>
     <script src="./js/index.js"></script>
 </body>
