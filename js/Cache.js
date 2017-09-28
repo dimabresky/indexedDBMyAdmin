@@ -23,27 +23,68 @@
 
     'use strict';
 
+    /**
+     * @type {Object}
+     */
     var cache = {};
 
-    function Cache (cacheTime) {
+    /**
+     * Конструктор класса кеширования
+     * @param       {Number} cacheTime
+     * @constructor
+     */
+    var Cache = function (cacheTime) {
 
-        this.setter = function (key, value) {
+        var that = this;
+
+        /**
+         * @param  {String} key
+         * @param  {String} value
+         * @return {undefined}
+         */
+        this.set = function (key, value) {
             cache[key] = value;
         }
 
+        /**
+         * @param  {String} key
+         * @param  {String} value
+         * @return {undefined}
+         */
+        this.get = function (key) {
+            return cache[key];
+        }
 
+        /**
+         * @param  {String} key
+         * @return {undefined}
+         */
+        this.remove = function (key) {
+            cache[key] = undefined;
+        }
 
+        /**
+         * Определение геттера для элемента кеширования
+         * @param  {String} key
+         * @param  {Function} getter
+         * @return {undefined}
+         */
         this.getter = function (key, getter) {
 
-            Object.defineProperty(this.cache, key, {
+            Object.defineProperty(this, key, {
                 get: getter
             });
         };
 
         setTimeout(function () {
-            this.cache = {}
+            var key;
+            for (key in cache) {
+                if (cache.hasOwnProperty(key)) {
+                    that.remove(key);
+                }
+            }
         }, cacheTime || 24*60000);
-    }
+    };
 
     return Cache;
 

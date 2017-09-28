@@ -49,7 +49,7 @@
                             <tfoot>
                                 <tr>
                                     <td colspan="4" class="text-right">
-                                        <button onclick="Utils.renderStorageModal()" type="button" class="btn btn-success">+ Еще</button>
+                                        <button onclick="app.renderStorageModal()" type="button" class="btn btn-success">+ Еще</button>
                                     </td>
                                 </tr>
                             </tfoot>
@@ -57,7 +57,7 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-primary" data-dismiss="modal">Отмена</button>
-                        <button onclick="Utils.addStorage()" id="add-storage-btn" type="button" class="btn btn-success">Добавить</button>
+                        <button onclick="app.addStorage()" id="add-storage-btn" type="button" class="btn btn-success">Добавить</button>
                     </div>
                 </div>
             </form>
@@ -78,7 +78,7 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-primary" data-dismiss="modal">Отмена</button>
-                        <button onclick="Utils.addElement()" id="add-storage-element-btn" type="button" class="btn btn-success">Добавить</button>
+                        <button onclick="app.addElement()" id="add-storage-element-btn" type="button" class="btn btn-success">Добавить</button>
                     </div>
                 </div>
             </form>
@@ -97,7 +97,7 @@
 
                 <div class="col-lg-6 col-md-6 col-sm-6">
 
-                    <select id="select-storage-container" onchange="Utils.choiceOfStorage(this);" class="form-control">
+                    <select id="select-storage-container" onchange="app.choiceOfStorage(this);" class="form-control">
                         <option value="">Выберите таблицу из списка</option>
                     </select>
 
@@ -126,8 +126,7 @@
     <script src="./js/plugins/jquery-3.2.1.min.js"></script>
     <script src="./js/plugins/bootstrap.min.js"></script>
     <script src="./js/IDBWrapper.js"></script>
-    <script src="./js/State.js"></script>
-    <script src="./js/Utilites.js"></script>
-    <script src="./js/index.js"></script>
+    <script src="./js/Cache.js"></script>
+    <script src="./js/App.js"></script>
 </body>
 </html>
