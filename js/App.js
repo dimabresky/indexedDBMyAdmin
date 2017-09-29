@@ -57,9 +57,9 @@ function App (Cache, IDBWrapper, $) {
     */
     this.renderStorageTable = function (tableDesc) {
 
-        if (typeof _this.cache.get(tableDesc.name) === 'string') {
+        if (typeof _this.cache.get(tableDesc.name + '_table_html') === 'string') {
             // рендерим таблицу из кеша
-            _this.cache['#data-area'].html(_this.cache.get(tableDesc.name));
+            _this.cache['#data-area'].html(_this.cache.get(tableDesc.name + '_table_html'));
         } else {
             // получаем данные текущей таблицы
             _this.db.store(tableDesc.name).get()
@@ -99,10 +99,10 @@ function App (Cache, IDBWrapper, $) {
                 table += '</tbody></table>';
 
                 _this.cache['#data-area'].html(table);
-                _this.cache[tableDesc.name] = table;
+                _this.cache[tableDesc.name + '_table_html'] = table;
             })
             .catch(function (message) {
-                triggerError(message);
+                _triggerError(message);
             });
         }
 
@@ -208,7 +208,7 @@ function App (Cache, IDBWrapper, $) {
                 }
 
             }).catch(function (message) {
-                triggerError(message);
+                _triggerError(message);
             });
         } else {
             this.cache['#add-storage-element'].html(this.cache.get('element-modal-' + State.currentStorage + '-' + elementId));
@@ -232,11 +232,11 @@ function App (Cache, IDBWrapper, $) {
         tr = this.cache['#row-tpl'].find('tr');
 
         if ( !/^[a-z]+$/.test(storageName) ) {
-            triggerError('Название таблицы должно состоять из латинских букв и знаков _ вместо пробелов. Пожалуйста, проверте правильность введенного названия таблицы');
+            _triggerError('Название таблицы должно состоять из латинских букв и знаков _ вместо пробелов. Пожалуйста, проверте правильность введенного названия таблицы');
         }
 
         if (this.db.getStoresList().indexOf(storageName) !== -1) {
-            triggerError('Таблица с таким именем уже существует');
+            _triggerError('Таблица с таким именем уже существует');
         }
 
         tr.each(function (i) {
@@ -254,7 +254,7 @@ function App (Cache, IDBWrapper, $) {
 
                 tmpVal = td.eq(0).find('input[type=text]').val();
                 if (!/^[а-яА-Яa-zA-Z_]+$/.test(tmpVal)) {
-                    triggerError('Код поля должен состоять только из букв и знаков _ вместо пробелов');
+                    _triggerError('Код поля должен состоять только из букв и знаков _ вместо пробелов');
                 }
 
                 fields[i].title = tmpVal;
@@ -294,11 +294,11 @@ function App (Cache, IDBWrapper, $) {
             })
             .catch(function (message) {
 
-                triggerError(message);
+                _triggerError(message);
             });
 
         } else {
-            triggerError('Правильно заполненых полей для создания таблицы не найдено');
+            _triggerError('Правильно заполненых полей для создания таблицы не найдено');
         }
 
     };
@@ -323,18 +323,23 @@ function App (Cache, IDBWrapper, $) {
                 _this.renderStorageTable(tableDesc[0]);
             })
             .catch(function (message) {
-                _this.triggerError(message);
+                _this._triggerError(message);
             });
 
         }
     };
+
+    this.addElement = function () {
+
+
+    },
 
     /**
     * Вывод сообщения об ошибке
     * @param  {String} message
     * @return {undefined}
     */
-    function triggerError (message) {
+    function _triggerError (message) {
 
         alert(message);
         throw new Error(message);
@@ -345,7 +350,7 @@ function App (Cache, IDBWrapper, $) {
      * @param  {String} selector
      * @return {undefined}
      */
-    function defineCacheJqDomElements (selector) {
+    function _defineCacheJqDomElements (selector) {
 
         _this.cache.getter(selector, function () {
 
@@ -373,7 +378,7 @@ function App (Cache, IDBWrapper, $) {
     ]
     .forEach(function (selector) {
 
-        defineCacheJqDomElements(selector);
+        _defineCacheJqDomElements(selector);
     });
 
     // определяем геттер для получения шаблона строки
@@ -395,6 +400,7 @@ function App (Cache, IDBWrapper, $) {
     });
 
     // определяем геттер для получения DOMNode
+    // область полей добавления элемента таблицы
     this.cache.getter('#add-storage-element', function () {
 
         var value = this.get('#add-storage-element');
@@ -422,7 +428,7 @@ function App (Cache, IDBWrapper, $) {
         }
 
     }).catch(function (message) {
-        triggerError(message);
+        _triggerError(message);
     });
 }
 
