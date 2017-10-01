@@ -3,6 +3,41 @@ function App (Cache, IDBWrapper, $) {
 
     var _this = this;
 
+    /**
+    * Вывод сообщения об ошибке
+    * @param  {String} message
+    * @return {undefined}
+    */
+    function _triggerError (message) {
+
+        alert(message);
+        throw new Error(message);
+    };
+
+    /**
+     * Определяет геттер получения DOMNode
+     * @param  {String} selector
+     * @return {undefined}
+     */
+    function _defineCacheJqDomElements (selector) {
+
+        _this.cache.getter(selector, function () {
+
+            var value = _this.cache.get(selector);
+
+            if (typeof value !== "undefined") {
+                return value;
+            }
+
+            value = $(selector);
+
+            _this.cache.set(selector, value);
+
+            return value;
+
+        });
+    }
+
     this.state = {
 
         /**
@@ -69,7 +104,7 @@ function App (Cache, IDBWrapper, $) {
                 <thead>\
                 <tr>\
                 <td class="pr-0 text-right" colspan="'+(tableDesc.fields.length + 1)+'">\
-                <button onclick="app.renderElementModal()" data-toggle="modal" data-target="#add-storage-element" class="btn btn-success">\
+                <button onclick="app.renderElementModal()" data-toggle="modal" data-target="#add-storage-element-modal" class="btn btn-success">\
                 + Добавить элемент\
                 </button>\
                 </td>\
@@ -86,7 +121,7 @@ function App (Cache, IDBWrapper, $) {
                     for (i = 0; i < tableData.length; i = i + 1) {
                         table += '<tr>';
                         for (j = 0; j < tableDesc.fields.length; j = j + 1) {
-                            table += '<td>'+tableData[i][tableDesc[j].code]+'</td>';
+                            table += '<td>'+tableData[i][tableDesc.fields[j].code]+'</td>';
                         }
                         table += '<td>\
                         <button class="btn btn-primary">Редактировать</button>\
@@ -114,10 +149,7 @@ function App (Cache, IDBWrapper, $) {
     */
     this.renderStorageInList = function (storage, isSelected) {
 
-        if (
-            !this.cache['#select-storage-container'].find('option[value='+storage+']').length &&
-            storage !== this.state.stcname
-        ) {
+        if (!this.cache['#select-storage-container'].find('option[value='+storage+']').length) {
             this.cache['#select-storage-container'].append('<option '+(isSelected ? 'selected=""' : '')+' value="'+storage+'">'+storage+'</option>');
         }
 
@@ -161,7 +193,7 @@ function App (Cache, IDBWrapper, $) {
                             } else if (tableDesc[0].fields[i].type === 'Boolean') {
                                 html += '<div class="checkbox">';
                                 html += '<label>';
-                                html += '<input value="Y" type="checkbox"> <b>' + tableDesc[0].fields[i].title + '</b>'
+                                html += '<input value="Y" name="'+tableDesc[0].fields[i].code+'" type="checkbox"> <b>' + tableDesc[0].fields[i].title + '</b>'
                                 html += '</label>';
                                 html += '</div>';
                             } else if (tableDesc[0].fields[i].type === 'Text') {
@@ -191,7 +223,7 @@ function App (Cache, IDBWrapper, $) {
                         } else if (tableDesc[0].fields[i].type === 'Boolean') {
                             html += '<div class="checkbox">';
                             html += '<label>';
-                            html += '<input value="Y" type="checkbox"> <b>' + tableDesc[0].fields[i].title + '</b>'
+                            html += '<input value="Y" name="'+tableDesc[0].fields[i].code+'" type="checkbox"> <b>' + tableDesc[0].fields[i].title + '</b>'
                             html += '</label>';
                             html += '</div>';
                         } else if (tableDesc[0].fields[i].type === 'Text') {
@@ -211,7 +243,7 @@ function App (Cache, IDBWrapper, $) {
                 _triggerError(message);
             });
         } else {
-            this.cache['#add-storage-element'].html(this.cache.get('element-modal-' + State.currentStorage + '-' + elementId));
+            this.cache['#add-storage-element'].html(this.cache.get('element-modal-' + this.state.currentStorage + '-' + (elementId || 0)));
         }
     };
 
@@ -314,66 +346,83 @@ function App (Cache, IDBWrapper, $) {
 
         if (this.state.currentStorage) {
 
-            // получаем описание текущей таблицы
-            this.db.store(this.state.stcname)
-            .where("name")
-            .equal(this.state.currentStorage)
-            .get()
-            .then(function (tableDesc) {
-                _this.renderStorageTable(tableDesc[0]);
-            })
-            .catch(function (message) {
-                _this._triggerError(message);
-            });
-
+            if (this.cache.get(this.state.currentStorage + "_table_desc") === 'oblect') {
+                this.renderStorageTable(this.cache.get(this.state.currentStorage + "_table_desc"));
+            } else {
+                // получаем описание текущей таблицы
+                this.db.store(this.state.stcname)
+                .where("name")
+                .equal(this.state.currentStorage)
+                .get()
+                .then(function (tableDesc) {
+                    _this.renderStorageTable(tableDesc[0]);
+                    _this.cache.set(_this.state.currentStorage + "_table_desc", tableDesc[0]);
+                })
+                .catch(function (message) {
+                    _triggerError(message);
+                });
+            }
         }
     };
 
     this.addElement = function () {
 
+        var tableDesc = this.cache.get(this.state.currentStorage + '_table_desc');
 
-    },
+        var fieldsDesc = tableDesc.fields;
 
-    /**
-    * Вывод сообщения об ошибке
-    * @param  {String} message
-    * @return {undefined}
-    */
-    function _triggerError (message) {
+        var toSave = {};
 
-        alert(message);
-        throw new Error(message);
-    };
+        fieldsDesc.forEach(function (fieldDesc) {
 
-    /**
-     * Определяет геттер получения DOMNode
-     * @param  {String} selector
-     * @return {undefined}
-     */
-    function _defineCacheJqDomElements (selector) {
+            var $field = null;
 
-        _this.cache.getter(selector, function () {
+            if (fieldDesc.code !== 'id') {
 
-            var value = this.get(selector);
+                toSave[fieldDesc.code] = null;
 
-            if (typeof value !== "undefined") {
-                return value;
+                switch (fieldDesc.type) {
+
+                    case 'String':
+                        $field = _this.cache['#add-storage-element'].find('input[name='+fieldDesc.code+']');
+                        toSave[fieldDesc.code] = $field.val();
+                        break;
+
+                    case 'Boolean':
+                        $field = _this.cache['#add-storage-element'].find('input[name='+fieldDesc.code+']');
+                        toSave[fieldDesc.code] = $field.is(':checked') ? 'Yes' : 'No';
+                        break;
+
+                    case 'Text':
+                        $field = _this.cache['#add-storage-element'].find('textarea[name='+fieldDesc.code+']');
+                        console.log($field);
+                        toSave[fieldDesc.code] = $field.val();
+                        break;
+
+                }
+
             }
-
-            value = $(selector);
-
-            this.set(selector, value);
-
-            return value;
-
         });
-    }
+
+        this.db.store(this.state.currentStorage).add(toSave)
+        .then(function () {
+            _this.cache.remove(_this.state.currentStorage + '_table_html');
+            _this.renderStorageTable(tableDesc);
+            _this.cache['#add-storage-element-modal'].modal('hide');
+            _this.cache['#add-storage-element'].html('');
+        })
+        .catch(function (message) {
+            _triggerError(message);
+        });
+    },
 
     [
         '#data-area',
         '#add-storage',
         '#storage-name',
         '#select-storage-container',
+        '#add-storage-element-modal',
+        '#add-storage-element',
         '#row-tpl'
     ]
     .forEach(function (selector) {
@@ -385,46 +434,30 @@ function App (Cache, IDBWrapper, $) {
     // формы добавления таблицы
     this.cache.getter('row-tpl-string', function () {
 
-        var value = this.get('row-tpl-string');
+        var value = _this.cache.get('row-tpl-string');
 
         if (typeof value !== "undefined") {
             return value;
         }
 
-        value = this['#row-tpl'].html();
+        value = _this.cache['#row-tpl'].html();
 
-        this.set('row-tpl-string', value);
-
-        return value;
-
-    });
-
-    // определяем геттер для получения DOMNode
-    // область полей добавления элемента таблицы
-    this.cache.getter('#add-storage-element', function () {
-
-        var value = this.get('#add-storage-element');
-
-        if (typeof value !== "undefined") {
-            return value;
-        }
-
-        value = $('#add-storage-element').find('.modal-body');
-
-        this.set('#add-storage-element', value);
+        _this.cache.set('row-tpl-string', value);
 
         return value;
 
     });
 
-    // подключаемся к бд и генерируем список таблиц
+    // подключаемся к бд
     this.db.connect().then(function () {
 
         var dbStoragesList = _this.db.getStoresList(), i, storagesList;
 
         for (i = 0; i < dbStoragesList.length; i = i + 1) {
 
-            _this.renderStorageInList(dbStoragesList[i]);
+            if (dbStoragesList[i] !== _this.state.stcname) {
+                _this.renderStorageInList(dbStoragesList[i]);
+            }
         }
 
     }).catch(function (message) {
