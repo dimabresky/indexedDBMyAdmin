@@ -430,8 +430,7 @@ function App (Cache, IDBWrapper, $) {
         _defineCacheJqDomElements(selector);
     });
 
-    // определяем геттер для получения шаблона строки
-    // формы добавления таблицы
+    // определяем геттер для получения шаблона строки формы добавления таблицы
     this.cache.getter('row-tpl-string', function () {
 
         var value = _this.cache.get('row-tpl-string');
@@ -456,6 +455,7 @@ function App (Cache, IDBWrapper, $) {
         for (i = 0; i < dbStoragesList.length; i = i + 1) {
 
             if (dbStoragesList[i] !== _this.state.stcname) {
+                // генерируем список таблиц
                 _this.renderStorageInList(dbStoragesList[i]);
             }
         }
