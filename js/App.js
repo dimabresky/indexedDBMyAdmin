@@ -124,7 +124,7 @@ function App (Cache, IDBWrapper, $) {
                         }
                         table += '<td>\
                         <button onclick="app.renderElementModal('+tableData[0].id+')" data-toggle="modal" data-target="#add-storage-element-modal" class="btn btn-primary">Редактировать</button>\
-                        <button class="btn btn-danger">Удалить</button>\
+                        <button onclick="app.deleteElement('+tableData[0].id+')" class="btn btn-danger">Удалить</button>\
                         </td>\
                         </tr>';
                     }
@@ -432,6 +432,27 @@ function App (Cache, IDBWrapper, $) {
         .catch(function (message) {
             _triggerError(message);
         });
+
+    };
+
+
+    this.deleteElement = function (elementId) {
+
+        if (elementId > 0) {
+
+            this.db.store(this.state.currentStorage)
+            .delete(elementId)
+            .then(function () {
+                _this.cache.remove(_this.state.currentStorage + '_table_html');
+                _this.renderStorageTable(_this.cache.get(_this.state.currentStorage + "_table_desc"));
+                _this.cache['#add-storage-element-modal'].modal('hide');
+                _this.cache['#add-storage-element'].html('');
+                _this.cache.remove('element-modal-' + _this.state.currentStorage + '-' + elementId);
+            }).catch(function (message) {
+                _triggerError(message);
+            });
+
+        }
 
     };
 
