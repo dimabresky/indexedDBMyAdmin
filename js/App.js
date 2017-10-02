@@ -99,7 +99,6 @@ function App (Cache, IDBWrapper, $) {
             // получаем данные текущей таблицы
             _this.db.store(tableDesc.name).get()
             .then(function (tableData) {
-
                 var table = '<table class="table">\
                 <thead>\
                 <tr>\
@@ -124,7 +123,7 @@ function App (Cache, IDBWrapper, $) {
                             table += '<td>'+tableData[i][tableDesc.fields[j].code]+'</td>';
                         }
                         table += '<td>\
-                        <button class="btn btn-primary">Редактировать</button>\
+                        <button onclick="app.renderElementModal('+tableData[0].id+')" data-toggle="modal" data-target="#add-storage-element-modal" class="btn btn-primary">Редактировать</button>\
                         <button class="btn btn-danger">Удалить</button>\
                         </td>\
                         </tr>';
@@ -178,11 +177,12 @@ function App (Cache, IDBWrapper, $) {
                 if (elementId > 0) {
 
                     _this.db.store(_this.state.currentStorage).where('id')
-                    .equal(elementId).get().then(function (data) {
+                    .equal(elementId).get().then(function (arrdata) {
+                        var data = arrdata[0];
                         for (i = 0; i < tableDesc[0].fields.length; i = i + 1) {
 
-                            if (fields[i].code === 'id') {
-                                continue;
+                            if (tableDesc[0].fields[i].code === 'id') {
+                                html += '<input name="id" type="hidden" value="'+data[tableDesc[0].fields[i].code]+'">';
                             }
 
                             if (tableDesc[0].fields[i].type === 'String') {
@@ -193,7 +193,7 @@ function App (Cache, IDBWrapper, $) {
                             } else if (tableDesc[0].fields[i].type === 'Boolean') {
                                 html += '<div class="checkbox">';
                                 html += '<label>';
-                                html += '<input value="Y" name="'+tableDesc[0].fields[i].code+'" type="checkbox"> <b>' + tableDesc[0].fields[i].title + '</b>'
+                                html += '<input '+(data[tableDesc[0].fields[i].code] === 'Yes' ? 'checked=""' : '')+' name="'+tableDesc[0].fields[i].code+'" type="checkbox"> <b>' + tableDesc[0].fields[i].title + '</b>'
                                 html += '</label>';
                                 html += '</div>';
                             } else if (tableDesc[0].fields[i].type === 'Text') {
@@ -365,11 +365,17 @@ function App (Cache, IDBWrapper, $) {
         }
     };
 
-    this.addElement = function () {
+    /**
+     * Добавление/редактирование нового элемента в таблицу
+     * @return {undefined}
+     */
+    this.addEditElement = function () {
 
         var tableDesc = this.cache.get(this.state.currentStorage + '_table_desc');
 
         var fieldsDesc = tableDesc.fields;
+
+        var elementId = null, method = null, args = [];
 
         var toSave = {};
 
@@ -395,26 +401,39 @@ function App (Cache, IDBWrapper, $) {
 
                     case 'Text':
                         $field = _this.cache['#add-storage-element'].find('textarea[name='+fieldDesc.code+']');
-                        console.log($field);
                         toSave[fieldDesc.code] = $field.val();
                         break;
 
                 }
 
+            } else {
+                elementId = _this.cache['#add-storage-element'].find('input[name='+fieldDesc.code+']').val();
             }
         });
 
-        this.db.store(this.state.currentStorage).add(toSave)
+        if (elementId > 0) {
+            method = "update";
+            args = [elementId, toSave];
+        } else {
+            method = "add";
+            args = [toSave];
+        }
+
+        this.db.store(this.state.currentStorage)[method].apply(null, args)
         .then(function () {
             _this.cache.remove(_this.state.currentStorage + '_table_html');
             _this.renderStorageTable(tableDesc);
             _this.cache['#add-storage-element-modal'].modal('hide');
             _this.cache['#add-storage-element'].html('');
+            if (elementId > 0) {
+                _this.cache.remove('element-modal-' + _this.state.currentStorage + '-' + elementId);
+            }
         })
         .catch(function (message) {
             _triggerError(message);
         });
-    },
+
+    };
 
     [
         '#data-area',

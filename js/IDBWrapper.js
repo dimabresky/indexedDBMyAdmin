@@ -456,7 +456,7 @@
                                 reject('Data for updating is not an object');
                             }
 
-                            data.id = id;
+                            data.id = Number(id);
 
                             var request = store.put(data);
 
