@@ -1,11 +1,9 @@
 {
   "name": "indexeddb-my-admin",
   "version": "1.0.0",
-  "description": "local store administration",
+  "description": "local storage administration",
   "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
+  "scripts": {},
   "keywords": [
     "indexeddb",
     "myadmin",

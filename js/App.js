@@ -143,13 +143,15 @@ function App (Cache, IDBWrapper, $) {
     };
 
     /**
-    * Добавляет возможность выбора таблицы
-    * @param  {String} storage
-    */
-    this.renderStorageInList = function (storage, isSelected) {
+     * Добавляет возможность выбора таблицы
+     * @param  {String}  storage
+     * @param  {Boolean} isSelected
+     * @return {undefined}
+     */
+    this.renderStorageInList = function (storageName, isSelected) {
 
-        if (!this.cache['#select-storage-container'].find('option[value='+storage+']').length) {
-            this.cache['#select-storage-container'].append('<option '+(isSelected ? 'selected=""' : '')+' value="'+storage+'">'+storage+'</option>');
+        if (!this.cache['#select-storage-container'].find('option[value='+storageName+']').length) {
+            this.cache['#select-storage-container'].append('<option '+(isSelected ? 'selected=""' : '')+' value="'+storageName+'">'+storageName+'</option>');
         }
 
     };
@@ -163,8 +165,10 @@ function App (Cache, IDBWrapper, $) {
     };
 
     /**
-    * Отрисовывает html контент для модального окно добавления элемента таблицы
-    */
+     * Отрисовывает html контент для модального окно добавления элемента таблицы
+     * @param  {Number} elementId
+     * @return {undefined}
+     */
     this.renderElementModal = function (elementId) {
 
         var i, html = '';
@@ -336,11 +340,13 @@ function App (Cache, IDBWrapper, $) {
     };
 
     /**
-    * Обработка выбора таблицы данных
-    */
-    this.choiceOfStorage = function (DOMNode) {
+     * Обработка выбора таблицы данных
+     * @param  {DOMNode} node
+     * @return {undefined}
+     */
+    this.choiceOfStorage = function (node) {
 
-        this.state.currentStorage = DOMNode.value;
+        this.state.currentStorage = node.value;
 
         this.cache['#data-area'].html('');
 
@@ -435,7 +441,11 @@ function App (Cache, IDBWrapper, $) {
 
     };
 
-
+    /**
+     * Удаление элемента
+     * @param  {Number} elementId
+     * @return {undefined}
+     */
     this.deleteElement = function (elementId) {
 
         if (elementId > 0) {
