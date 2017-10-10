@@ -68,7 +68,6 @@
         this.close = function () {
 
             this.db.close();
-            this.db = null;
         };
 
         /**
@@ -88,11 +87,6 @@
                         request.onerror = function (event) {
 
                             return reject(event.target.error.message);
-                        };
-
-                        request.onblocked = function () {
-
-                            return reject('Please close all other tabs that use this application');
                         };
 
                         request.onsuccess = function (event) {
@@ -126,12 +120,6 @@
             this.DBVERSION = this.db.version + 1;
 
             this.onUpgradeNeeded = onUpgradeNeeded;
-
-            if (typeof this.transaction === 'IDBTransaction') {
-
-                this.transaction.abort();
-                this.transaction = null;
-            }
 
             this.close();
 
@@ -212,16 +200,16 @@
         /**
          * Удаление хранилища
          * @param  {String} name Имя хранилища
-         * @return {this}
+         * @return {Promise}
          */
         this.deleteStore = function (name) {
 
-            if (typeof name === 'string') {
-
-                this.db.deleteObjectStore(name);
-            }
-
-            return this;
+            var _this = this;
+            return _this.reconnect(function () {
+                if (typeof name === 'string') {
+                    _this.db.deleteObjectStore(name);
+                }
+            });
         };
 
         /**
@@ -253,12 +241,10 @@
                 throw new Error('The name of the repository is not specified when you try to connect to the repository');
             }
 
-            if (typeof this.transaction !== 'IDBTransaction') {
-
-                this.transaction = this.db.transaction(this.db.objectStoreNames, 'readwrite');
-            }
+            this.transaction = this.db.transaction(name, 'readwrite');
 
             store = this.transaction.objectStore(name);
+
 
             return {
 
@@ -322,7 +308,7 @@
                  */
                 where: function (index) {
 
-                    var keyRange = null, deforder = 'nextunique', objIndex = store.index(index);
+                    var keyRange = null, deforder = 'next', objIndex = store.index(index);
 
                     return {
 
@@ -387,7 +373,7 @@
                          */
                         order: function (order) {
 
-                            deforder = order === 'desc' ? 'prevunique' : 'nextunique';
+                            deforder = order === 'desc' ? "prev" : "next";
 
                             return this;
 
@@ -419,9 +405,9 @@
                                             data.push(value);
 
                                             cursor.advance(1);
+                                        } else {
+                                            return resolve(data);
                                         }
-
-                                        return resolve(data);
                                     };
 
                                     cursorResult.onerror = function (event) {

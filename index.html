@@ -102,7 +102,7 @@
                     </select>
 
                     <button data-toggle="modal" data-target="#edit-store" type="button" class="hidden btn btn-primary">Редактировать</button>
-                    <button type="button" class="hidden btn btn-danger">Удалить</button>
+                    <button type="button" onclick="app.deleteStorage()" id="delete-storage-btn" class="hidden btn btn-danger">Удалить</button>
 
                 </div>
 
@@ -127,6 +127,7 @@
     <script src="./js/plugins/bootstrap.min.js"></script>
     <script src="./js/IDBWrapper.js"></script>
     <script src="./js/Cache.js"></script>
+    <script src="./js/PageNavigator.js"></script>
     <script src="./js/App.js"></script>
 </body>
 </html>

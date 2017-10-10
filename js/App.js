@@ -1,5 +1,5 @@
 
-function App (Cache, IDBWrapper, $) {
+function App (Cache, IDBWrapper, PageNavigator, $) {
 
     var _this = this;
 
@@ -38,6 +38,85 @@ function App (Cache, IDBWrapper, $) {
         });
     }
 
+    /**
+     * Очистка кеша по текущей таблице
+     * @param       {String} storageName
+     * @return      {undefined}
+     */
+    function _clearCacheForStorage (storageName) {
+        _this.cache.remove(storageName + '_table_html');
+        _this.cache.remove(storageName + '_page_navigator');
+    }
+
+    /**
+     * Общие действия по текущей таблице
+     * очистка кеша, сброс текущей страницы, перерендер
+     * @return      {undefined}
+     */
+    function _commonCStorageActions () {
+        _clearCacheForStorage(_this.state.currentStorage);
+        _this.state.page = 1;
+        _this.renderStorageTable(_this.cache.get(_this.state.currentStorage + "_table_desc"));
+    }
+
+    /**
+     * Рендерит таблицу данных
+     * @param       {Object} tableDesc
+     * @param       {PageNavigator} pageNavigator
+     * @return      {undefined}
+     */
+    function _renderTable (tableDesc, pageNavigator) {
+
+        var tmp = {};
+        var pager = pageNavigator.page(_this.state.page);
+        var tableData = pager.getItems();
+        var table = '<table class="table">\
+        <thead>\
+        <tr>\
+        <td class="pr-0 text-right" colspan="'+(tableDesc.fields.length + 1)+'">\
+        <button onclick="app.renderElementModal()" data-toggle="modal" data-target="#add-storage-element-modal" class="btn btn-success">\
+        + Добавить элемент\
+        </button>\
+        </td>\
+        </tr><tr>',
+        i = 0, j = 0;
+
+        for (i = 0; i < tableDesc.fields.length; i = i + 1) {
+            table += '<td><b>'+(typeof tableDesc.fields[i].title === 'string' ? tableDesc.fields[i].title : tableDesc.fields[i].code)+'</b></td>';
+        }
+
+        table += '</tr></thead><tbody>';
+
+        if (tableData.length > 0) {
+
+            for (i = 0; i < tableData.length; i = i + 1) {
+                table += '<tr>';
+                for (j = 0; j < tableDesc.fields.length; j = j + 1) {
+                    table += '<td>'+tableData[i][tableDesc.fields[j].code]+'</td>';
+                }
+                table += '<td>\
+                <button onclick="app.renderElementModal('+tableData[i].id+')" data-toggle="modal" data-target="#add-storage-element-modal" class="btn btn-primary">Редактировать</button>\
+                <button onclick="app.deleteElement('+tableData[i].id+')" class="btn btn-danger">Удалить</button>\
+                </td>\
+                </tr>';
+            }
+        }
+
+        table += '</tbody><tfoot><tr><td colspan="'+ tableDesc.fields.length + 1 +'" \
+        align="right">'+pager.getHtml()+'</td></tr></tfoot></table>';
+
+        _this.cache['#data-area'].html(table);
+
+        if (typeof _this.cache.get(tableDesc.name + '_table_html') === 'object') {
+            tmp = _this.cache.get(tableDesc.name + '_table_html');
+            tmp[[_this.state.page]] = table;
+            _this.cache.set(tableDesc.name + '_table_html', tmp);
+        } else {
+            tmp[[_this.state.page]] = table;
+            _this.cache.set(tableDesc.name + '_table_html', tmp);
+        }
+    }
+
     this.state = {
 
         /**
@@ -56,7 +135,19 @@ function App (Cache, IDBWrapper, $) {
          * Название текущей таблицы приложения
          * @type {String}
          */
-        currentStorage: null
+        currentStorage: null,
+
+        /**
+         * Текущая страница
+         * @type {Number}
+         */
+        page: 1,
+
+        /**
+         * Количество элементов на страницу
+         * @type {Number}
+         */
+        numberPerPage: 10
     };
 
     /**
@@ -92,55 +183,43 @@ function App (Cache, IDBWrapper, $) {
     */
     this.renderStorageTable = function (tableDesc) {
 
-        if (typeof _this.cache.get(tableDesc.name + '_table_html') === 'string') {
+        if (
+            typeof _this.cache.get(tableDesc.name + '_table_html') === 'object' &&
+            typeof _this.cache.get(tableDesc.name + '_table_html')[_this.state.page] === 'string'
+        ) {
             // рендерим таблицу из кеша
-            _this.cache['#data-area'].html(_this.cache.get(tableDesc.name + '_table_html'));
+            _this.cache['#data-area'].html(_this.cache.get(tableDesc.name + '_table_html')[_this.state.page]);
         } else {
-            // получаем данные текущей таблицы
-            _this.db.store(tableDesc.name).get()
-            .then(function (tableData) {
-                var table = '<table class="table">\
-                <thead>\
-                <tr>\
-                <td class="pr-0 text-right" colspan="'+(tableDesc.fields.length + 1)+'">\
-                <button onclick="app.renderElementModal()" data-toggle="modal" data-target="#add-storage-element-modal" class="btn btn-success">\
-                + Добавить элемент\
-                </button>\
-                </td>\
-                </tr><tr>',
-                i = 0, j = 0;
-
-                for (i = 0; i < tableDesc.fields.length; i = i + 1) {
-                    table += '<td><b>'+(typeof tableDesc.fields[i].title === 'string' ? tableDesc.fields[i].title : tableDesc.fields[i].code)+'</b></td>';
-                }
-
-                table += '</tr></thead><tbody>';
-
-                if (tableData.length > 0) {
-                    for (i = 0; i < tableData.length; i = i + 1) {
-                        table += '<tr>';
-                        for (j = 0; j < tableDesc.fields.length; j = j + 1) {
-                            table += '<td>'+tableData[i][tableDesc.fields[j].code]+'</td>';
-                        }
-                        table += '<td>\
-                        <button onclick="app.renderElementModal('+tableData[0].id+')" data-toggle="modal" data-target="#add-storage-element-modal" class="btn btn-primary">Редактировать</button>\
-                        <button onclick="app.deleteElement('+tableData[0].id+')" class="btn btn-danger">Удалить</button>\
-                        </td>\
-                        </tr>';
-                    }
-                }
-
-                table += '</tbody></table>';
-
-                _this.cache['#data-area'].html(table);
-                _this.cache[tableDesc.name + '_table_html'] = table;
-            })
-            .catch(function (message) {
-                _triggerError(message);
-            });
+            if (typeof _this.cache.get(tableDesc.name + '_page_navigator') === 'PageNavigator') {
+                _renderTable(tableDesc, _this.cache.get(tableDesc.name + '_page_navigator'));
+            } else {
+                // получаем данные текущей таблицы
+                _this.db.store(tableDesc.name).where('id').order('desc').get()
+                .then(function (tableData) {
+                    _this.cache.set(
+                        tableDesc.name + '_page_navigator',
+                        new PageNavigator(tableData, _this.state.numberPerPage, '<a href="#" onclick="app.renderStoragePage(#page#)">#content#</a>')
+                    );
+                    _renderTable(tableDesc, _this.cache.get(tableDesc.name + '_page_navigator'));
+                })
+                .catch(function (message) {
+                    _triggerError(message);
+                });
+            }
         }
 
     };
+
+    /**
+     * Рендер страницы текущей таблицы
+     * @param  {Number} page
+     * @return {Boolean}
+     */
+    this.renderStoragePage = function (page) {
+        _this.state.page = page > 0 ? page : 1;
+        _this.renderStorageTable(_this.cache.get(_this.state.currentStorage + '_table_desc'));
+        return false;
+    }
 
     /**
      * Добавляет возможность выбора таблицы
@@ -157,6 +236,15 @@ function App (Cache, IDBWrapper, $) {
     };
 
     /**
+     * Удаляет возможномть выбора таблицы
+     * @param  {String} storageName
+     * @return {undefined}
+     */
+    this.removeStorageFromList = function (storageName) {
+        this.cache['#select-storage-container'].find('option[value='+storageName+']').remove();
+    }
+
+    /**
     * Добавляет строку полей описания таблицы
     */
     this.renderStorageModal = function () {
@@ -165,7 +253,7 @@ function App (Cache, IDBWrapper, $) {
     };
 
     /**
-     * Отрисовывает html контент для модального окно добавления элемента таблицы
+     * Отрисовывает html контент для модального окна добавления элемента таблицы
      * @param  {Number} elementId
      * @return {undefined}
      */
@@ -213,6 +301,7 @@ function App (Cache, IDBWrapper, $) {
                     });
 
                 } else {
+
                     for (i = 0; i < tableDesc[0].fields.length; i = i + 1) {
 
                         if (tableDesc[0].fields[i].code === 'id') {
@@ -247,6 +336,7 @@ function App (Cache, IDBWrapper, $) {
                 _triggerError(message);
             });
         } else {
+
             this.cache['#add-storage-element'].html(this.cache.get('element-modal-' + this.state.currentStorage + '-' + (elementId || 0)));
         }
     };
@@ -289,8 +379,8 @@ function App (Cache, IDBWrapper, $) {
                 fields[i] = {code: tmpVal};
 
                 tmpVal = td.eq(0).find('input[type=text]').val();
-                if (!/^[а-яА-Яa-zA-Z_]+$/.test(tmpVal)) {
-                    _triggerError('Код поля должен состоять только из букв и знаков _ вместо пробелов');
+                if (!/^[а-яА-Яa-zA-Z_'\s]+$/.test(tmpVal)) {
+                    _triggerError('Название поля должено состоять только из букв пробелов');
                 }
 
                 fields[i].title = tmpVal;
@@ -324,6 +414,7 @@ function App (Cache, IDBWrapper, $) {
                 _this.cache['#row-tpl'].html('');
                 _this.renderStorageModal();
                 _this.cache['#add-storage'].modal('hide');
+                _this.cache['#storage-name'].val('');
                 _this.renderStorageInList(storageName, true);
                 _this.cache['#select-storage-container'].val(storageName);
                 _this.cache['#select-storage-container'].trigger('change');
@@ -348,9 +439,15 @@ function App (Cache, IDBWrapper, $) {
 
         this.state.currentStorage = node.value;
 
+        this.state.page = 1;
+
         this.cache['#data-area'].html('');
 
+        this.cache['#delete-storage-btn'].addClass('hidden');
+
         if (this.state.currentStorage) {
+
+            this.cache['#delete-storage-btn'].removeClass('hidden');
 
             if (this.cache.get(this.state.currentStorage + "_table_desc") === 'oblect') {
                 this.renderStorageTable(this.cache.get(this.state.currentStorage + "_table_desc"));
@@ -427,8 +524,7 @@ function App (Cache, IDBWrapper, $) {
 
         this.db.store(this.state.currentStorage)[method].apply(null, args)
         .then(function () {
-            _this.cache.remove(_this.state.currentStorage + '_table_html');
-            _this.renderStorageTable(tableDesc);
+            _commonCStorageActions();
             _this.cache['#add-storage-element-modal'].modal('hide');
             _this.cache['#add-storage-element'].html('');
             if (elementId > 0) {
@@ -453,10 +549,7 @@ function App (Cache, IDBWrapper, $) {
             this.db.store(this.state.currentStorage)
             .delete(elementId)
             .then(function () {
-                _this.cache.remove(_this.state.currentStorage + '_table_html');
-                _this.renderStorageTable(_this.cache.get(_this.state.currentStorage + "_table_desc"));
-                _this.cache['#add-storage-element-modal'].modal('hide');
-                _this.cache['#add-storage-element'].html('');
+                _commonCStorageActions();
                 _this.cache.remove('element-modal-' + _this.state.currentStorage + '-' + elementId);
             }).catch(function (message) {
                 _triggerError(message);
@@ -466,8 +559,33 @@ function App (Cache, IDBWrapper, $) {
 
     };
 
+    /**
+     * Удаление хранилища
+     * @return {undefined}
+     */
+    this.deleteStorage = function () {
+        _this.db.store(_this.state.stcname).where('name').equal(_this.state.currentStorage).get()
+        .then(function (data) {
+            console.log(data);
+            return _this.db.store(_this.state.stcname).delete(data[0].id);
+        })
+        .then(function () {
+            return _this.db.deleteStore(_this.state.currentStorage);
+        })
+        .then(function () {
+            _this.removeStorageFromList(_this.state.currentStorage);
+            _clearCacheForStorage(_this.state.currentStorage);
+            _this.cache['#select-storage-container'].val('');
+            _this.cache['#select-storage-container'].trigger('change');
+        })
+        .catch(function (message) {
+            _triggerError(message);
+        });
+    };
+
     [
         '#data-area',
+        '#delete-storage-btn',
         '#add-storage',
         '#storage-name',
         '#select-storage-container',
@@ -515,4 +633,4 @@ function App (Cache, IDBWrapper, $) {
     });
 }
 
-window.app = new App(Cache, IDBWrapper, jQuery);
+window.app = new App(Cache, IDBWrapper, PageNavigator, jQuery);
