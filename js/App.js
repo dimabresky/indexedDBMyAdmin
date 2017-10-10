@@ -152,7 +152,7 @@ function App (Cache, IDBWrapper, PageNavigator, $) {
          * Количество элементов на страницу
          * @type {Number}
          */
-        numberPerPage: 10
+        numberPerPage: 2
     };
 
     /**
