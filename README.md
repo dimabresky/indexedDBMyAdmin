@@ -13,6 +13,6 @@
 
 ![Форма добавления/редактрования элемента хранилища](https://github.com/dimabresky/indexedDBMyAdmin/raw/master/img/img2.png)
 
-![Таблица БД](https://github.com/dimabresky/indexedDBMyAdmin/raw/master/img/img2.png)
+![Таблица БД](https://github.com/dimabresky/indexedDBMyAdmin/raw/master/img/img3.png)
 
 Протестировано c Google Chrome 61.0.x.x
